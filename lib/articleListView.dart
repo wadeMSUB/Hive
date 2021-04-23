@@ -44,115 +44,141 @@ class _ArticleListViewState extends State<ArticleListView> {
   }
 
   @override
-  Widget build(BuildContext context) => ListView(
-    controller: scrollController,
-    children: [
-      ...widget.articlesProvider.articles.map((article) => Card(
-          child: Column(
-            children: [FutureBuilder(
-                future:
-                getArticleImages(article.id),
-                builder: (_, cloudSnap) {
-                  if (cloudSnap.connectionState ==
-                      ConnectionState.waiting) {
-                    return Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  } else if (cloudSnap.data.length > 0) {
-                    return Container(
-                      margin:
-                      EdgeInsets.symmetric(vertical: 10.0),
-                      height: 200.0,
-                      child: Scrollbar(
-                          child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: cloudSnap.data.length,
-                              itemBuilder: (_, index) {
-                                return Container(
-                                  width: MediaQuery.of(context)
-                                      .size
-                                      .width,
-                                  color: Colors.blueGrey[800],
-                                  child: GestureDetector(
-                                    child: Hero(
-                                      tag:
-                                      cloudSnap.data[index],
-                                      child: Image.network(
-                                          cloudSnap
-                                              .data[index]),
+  Widget build(BuildContext context) => Scaffold(
+    body: ListView(
+      controller: scrollController,
+      children: [
+        ...widget.articlesProvider.articles.map((article) => Card(
+            child: Column(
+              children: [
+
+                FutureBuilder(
+                  future:
+                  getArticleImages(article.id),
+                  builder: (_, cloudSnap) {
+                    if (cloudSnap.connectionState ==
+                        ConnectionState.waiting) {
+                      return Column(
+                        //Image progress indicator
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [CircularProgressIndicator(
+                          strokeWidth: 2,
+                        )],
+                      );
+                    } else if (cloudSnap.data.length > 0) {
+                      return Container(
+                        margin:
+                        EdgeInsets.symmetric(vertical: 10.0),
+                        height: 200.0,
+                        child: Scrollbar(
+                            child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: cloudSnap.data.length,
+                                itemBuilder: (_, index) {
+                                  return Container(
+                                    width: MediaQuery.of(context)
+                                        .size
+                                        .width,
+                                    color: Colors.blueGrey[800],
+                                    child: GestureDetector(
+                                      child: Hero(
+                                        tag:
+                                        cloudSnap.data[index],
+                                        child: Image.network(
+                                            cloudSnap
+                                                .data[index]),
+                                      ),
+                                      onTap: () {
+                                        Navigator.push(context,
+                                            MaterialPageRoute(
+                                                builder: (_) {
+                                                  return ImagePopup(
+                                                      url: cloudSnap
+                                                          .data[index],
+                                                      tag: cloudSnap
+                                                          .data[index]);
+                                                }));
+                                      },
                                     ),
-                                    onTap: () {
-                                      Navigator.push(context,
-                                          MaterialPageRoute(
-                                              builder: (_) {
-                                                return ImagePopup(
-                                                    url: cloudSnap
-                                                        .data[index],
-                                                    tag: cloudSnap
-                                                        .data[index]);
-                                              }));
-                                    },
-                                  ),
-                                );
-                              })),
-                    );
-                  } else {
-                    return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                              "No images associated this this one."),
-                        ));
-                  }
-                }),
-              ListTile(
-                  onTap: () => {
+                                  );
+                                })),
+                      );
+                    } else {
+                      return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                                "No images associated this this one."),
+                          ));
+                    }
+                  }),
+                ListTile(
+                    onTap: () => {
 
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (BuildContext context) =>
-                                Article(
-                                    article: article)))
-                  },
-                  title: Text(article
-                      .data()["articleTitle"]),
-                  subtitle: Text(getTime(article)),
-                  trailing: Chip(
-                    backgroundColor: getColor(
-                        article.data()["catMajor"]),
-                    label: Text(capitalize(
-                        article.data()["catMajor"])),
-                  )),
-              Divider(
-                thickness: 2,
-                indent: 5,
-                endIndent: 5,
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(5, 0, 5, 5),
-                child: Container(
-                    alignment: Alignment.topLeft,
-                    child: Wrap(
-                      children:
-                      getArticleChips(article),
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (BuildContext context) =>
+                                  Article(
+                                      article: article)))
+                    },
+                    title: Text(article
+                        .data()["articleTitle"]),
+                    subtitle: Text(getTime(article)),
+                    trailing: Chip(
+                      backgroundColor: getColor(
+                          article.data()["catMajor"]),
+                      label: Text(capitalize(
+                          article.data()["catMajor"])),
                     )),
+                Divider(
+                  thickness: 2,
+                  indent: 5,
+                  endIndent: 5,
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(5, 0, 5, 5),
+                  child: Container(
+                      alignment: Alignment.topLeft,
+                      child: Wrap(
+                        children:
+                        getArticleChips(article),
+                      )),
+                ),
+              ],)
+
+        )).toList(),
+        if (widget.articlesProvider.hasNext)
+          Align(
+            alignment: Alignment.bottomCenter,
+            heightFactor: 2,
+            child: GestureDetector(
+              onTap: widget.articlesProvider.fetchNextArticles,
+
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    height: 200,
+                    width: 200,
+                    child: CircularProgressIndicator(strokeWidth: 10,
+                    ),
+                  ),
+                ],
               ),
-            ],)
-
-      )).toList(),
-      if (widget.articlesProvider.hasNext)
-        Center(
-          child: GestureDetector(
-            onTap: widget.articlesProvider.fetchNextArticles,
-
-            child: Container(
-              height: 200,
-              width: 200,
-              child: CircularProgressIndicator(),
             ),
           ),
-        ),
-    ],
+        ],
+    ),
+    floatingActionButton: FloatingActionButton(
+      onPressed: () {
+        // Add your onPressed code here!
+        scrollController.position.moveTo(0);
+      },
+      child: const Icon(Icons.arrow_upward),
+      backgroundColor: Colors.amber[500],
+    ),
   );
 }

@@ -14,11 +14,21 @@ class ArticlesPage extends StatelessWidget {
         centerTitle: true,
         backgroundColor: Colors.blue[900],
       ),
-      body: Consumer<ArticlesProvider>(
-        builder: (context, articlesProvider, _) => ArticleListView(
-          articlesProvider: articlesProvider,
-        ),
+      body: Column(
+        children: [ExpansionTile(title: Text("Sort Options"),
+        children: [
+
+        ],),
+          Flexible(
+            child: Consumer<ArticlesProvider>(
+              builder: (context, articlesProvider, _) => ArticleListView(
+                articlesProvider: articlesProvider,
+              ),
+            ),
+          ),
+        ],
       ),
+
     ),
   );
 }
